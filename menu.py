@@ -1,87 +1,183 @@
-# Assistente Virtual HC - Sistema de Apoio para Teleconsultas
+# ==============================
+# Assistente Virtual HC - Sistema de Teleconsultas
+# Estrutura: CRUD em listas de listas
+# ==============================
 
-pacientes = []  # Lista para armazenar os pacientes cadastrados
-presencas = []  # Lista para confirmar presença
-
-# Função para validar CPF
+# ------------------------------
+# Funções de validação
+# ------------------------------
 
 def validar_cpf(cpf):
-    if len(cpf) == 11 and cpf.isdigit():
-        return True
-    return False
-
-# Função para validar idade
+    """Valida se o CPF possui 11 dígitos numéricos"""
+    return len(cpf) == 11 and cpf.isdigit()
 
 def validar_idade(idade):
-    if idade.isdigit():
-        return True
-    return False
+    """Valida se a idade é um número inteiro maior que zero"""
+    return idade.isdigit() and int(idade) > 0
 
-# Função para cadastrar paciente
-def cadastrar_paciente():
+def validar_tipo(tipo):
+    """Valida se o tipo de reabilitação é válido"""
+    tipos_validos = ["motora", "cognitiva", "física", "ocupacional"]
+    return tipo.lower() in tipos_validos
+
+# ------------------------------
+# Funções CRUD de Pacientes
+# ------------------------------
+
+def cadastrar_paciente(pacientes):
+    """Cadastra um novo paciente, validando CPF, idade e tipo"""
     print("\n--- Cadastrar Paciente ---")
-    nome = input("Nome: ")
-    cpf = input("CPF (11 dígitos): ")
+    nome = input("Nome: ").strip()
+    if not nome:
+        print("Nome não pode ser vazio.")
+        return pacientes
+
+    cpf = input("CPF (11 dígitos): ").strip()
     while not validar_cpf(cpf):
         print("CPF inválido. Tente novamente.")
-        cpf = input("CPF (11 dígitos): ")
+        cpf = input("CPF (11 dígitos): ").strip()
 
-    idade = input("Idade: ")
+    # Evita duplicidade de CPF
+    for p in pacientes:
+        if p[1] == cpf:
+            print("CPF já cadastrado!")
+            return pacientes
+
+    idade = input("Idade: ").strip()
     while not validar_idade(idade):
-        print("Idade inválida. Deve ser um número.")
-        idade = input("Idade: ")
+        print("Idade inválida. Deve ser um número maior que zero.")
+        idade = input("Idade: ").strip()
 
-    idade_num = int(idade)
-    tipo = input("Tipo de reabilitação (motora, cognitiva, etc): ")
+    try:
+        idade_num = int(idade)
+    except ValueError:
+        print("Erro ao converter idade. Cadastro cancelado.")
+        return pacientes
+
+    tipo = input("Tipo de reabilitação (motora, cognitiva, física, ocupacional): ").strip()
+    if not tipo or not validar_tipo(tipo):
+        tipo = "Não informado"
+
     paciente = [nome, cpf, idade_num, tipo]
     pacientes.append(paciente)
     print("Paciente cadastrado com sucesso!")
+    return pacientes
 
-# Função para listar pacientes
-def listar_pacientes():
+def listar_pacientes(pacientes):
+    """Lista todos os pacientes cadastrados"""
     print("\n--- Pacientes Cadastrados ---")
     if len(pacientes) == 0:
         print("Nenhum paciente cadastrado.")
     else:
-        i = 1
-        for p in pacientes:
-            print(str(i) + ". Nome: " + p[0] + " | CPF: " + p[1] + " | Idade: " + str(p[2]) + " | Reabilitação: " + p[3])
-            i += 1
+        for i, p in enumerate(pacientes, start=1):
+            print(f"{i}. Nome: {p[0]} | CPF: {p[1]} | Idade: {p[2]} | Reabilitação: {p[3]}")
 
-# Função para confirmar presença
-def confirmar_presenca():
-    print("\n--- Confirmar Presença ---")
-    cpf = input("Informe seu CPF: ")
+def atualizar_paciente(pacientes):
+    """Atualiza informações de um paciente existente"""
+    print("\n--- Atualizar Paciente ---")
+    cpf = input("Digite o CPF do paciente que deseja atualizar: ").strip()
     if not validar_cpf(cpf):
         print("CPF inválido.")
-    else:
-        encontrado = False
-        for p in pacientes:
-            if p[1] == cpf:
-                presencas.append(cpf)
-                print("Presença confirmada para " + p[0])
-                encontrado = True
-        if not encontrado:
-            print("Paciente não encontrado.")
+        return pacientes
 
-# Função para cancelar consulta
-def cancelar_consulta():
-    print("\n--- Cancelar Consulta ---")
-    cpf = input("Informe seu CPF: ")
-    nova_lista = []
-    cancelado = False
     for p in pacientes:
-        if p[1] != cpf:
-            nova_lista.append(p)
-        else:
-            cancelado = True
-            print("Consulta de " + p[0] + " cancelada.")
-    if not cancelado:
-        print("Paciente não encontrado.")
-    pacientes[:] = nova_lista
+        if p[1] == cpf:
+            novo_nome = input(f"Novo nome ({p[0]}): ").strip()
+            if novo_nome:
+                p[0] = novo_nome
 
-# Função com orientações pré-consulta
+            nova_idade = input(f"Nova idade ({p[2]}): ").strip()
+            if nova_idade:
+                if validar_idade(nova_idade):
+                    try:
+                        p[2] = int(nova_idade)
+                    except ValueError:
+                        print("Erro ao atualizar idade. Mantendo anterior.")
+                else:
+                    print("Idade inválida. Mantendo anterior.")
+
+            novo_tipo = input(f"Novo tipo de reabilitação ({p[3]}): ").strip()
+            if novo_tipo:
+                if validar_tipo(novo_tipo):
+                    p[3] = novo_tipo
+                else:
+                    print("Tipo inválido. Mantendo anterior.")
+
+            print("Paciente atualizado com sucesso!")
+            return pacientes
+    print("Paciente não encontrado.")
+    return pacientes
+
+def excluir_paciente(pacientes, presencas):
+    """Exclui um paciente do sistema"""
+    print("\n--- Excluir Paciente ---")
+    cpf = input("Digite o CPF do paciente a ser excluído: ").strip()
+    if not validar_cpf(cpf):
+        print("CPF inválido.")
+        return pacientes, presencas
+
+    for i, p in enumerate(pacientes):
+        if p[1] == cpf:
+            confirmar = input(f"Tem certeza que deseja excluir {p[0]}? (s/n): ").lower()
+            if confirmar != 's':
+                print("Exclusão cancelada.")
+                return pacientes, presencas
+
+            pacientes.pop(i)
+            if cpf in presencas:
+                presencas.remove(cpf)
+            print(f"Paciente {p[0]} excluído com sucesso!")
+            return pacientes, presencas
+    print("Paciente não encontrado.")
+    return pacientes, presencas
+
+# ------------------------------
+# Funções de presença e cancelamento
+# ------------------------------
+
+def confirmar_presenca(pacientes, presencas):
+    """Confirma a presença do paciente"""
+    print("\n--- Confirmar Presença ---")
+    cpf = input("Informe seu CPF: ").strip()
+    if not validar_cpf(cpf):
+        print("CPF inválido.")
+        return presencas
+    for p in pacientes:
+        if p[1] == cpf:
+            if cpf in presencas:
+                print("Presença já confirmada.")
+            else:
+                presencas.append(cpf)
+                print(f"Presença confirmada para {p[0]}")
+            return presencas
+    print("Paciente não encontrado.")
+    return presencas
+
+def cancelar_consulta(pacientes, presencas):
+    """Cancela a consulta de um paciente"""
+    print("\n--- Cancelar Consulta ---")
+    cpf = input("Informe seu CPF: ").strip()
+    if not validar_cpf(cpf):
+        print("CPF inválido.")
+        return pacientes, presencas
+
+    if cpf in presencas:
+        presencas.remove(cpf)
+
+    for i, p in enumerate(pacientes):
+        if p[1] == cpf:
+            pacientes.pop(i)
+            print(f"Consulta de {p[0]} cancelada.")
+            return pacientes, presencas
+    print("Paciente não encontrado.")
+    return pacientes, presencas
+
+# ------------------------------
+# Função de orientações pré-consulta
+# ------------------------------
+
 def mostrar_orientacoes():
+    """Exibe orientações antes da consulta"""
     print("\n--- Orientações Pré-Consulta ---")
     print("1. Garanta uma boa conexão com a internet.")
     print("2. Escolha um local silencioso e bem iluminado.")
@@ -89,34 +185,86 @@ def mostrar_orientacoes():
     print("4. Tenha seus documentos em mãos.")
     print("5. Clique no link da consulta com 10 minutos de antecedência.")
 
+# ------------------------------
+# Submenus
+# ------------------------------
+
+def submenu_crud_pacientes(pacientes, presencas):
+    while True:
+        print("\n--- Menu de Pacientes (CRUD) ---")
+        print("1. Cadastrar Paciente")
+        print("2. Listar Pacientes")
+        print("3. Atualizar Paciente")
+        print("4. Excluir Paciente")
+        print("5. Voltar")
+        escolha = input("Escolha uma opção: ").strip()
+
+        if escolha == '1':
+            pacientes = cadastrar_paciente(pacientes)
+        elif escolha == '2':
+            listar_pacientes(pacientes)
+        elif escolha == '3':
+            pacientes = atualizar_paciente(pacientes)
+        elif escolha == '4':
+            pacientes, presencas = excluir_paciente(pacientes, presencas)
+        elif escolha == '5':
+            break
+        else:
+            print("Opção inválida.")
+    return pacientes, presencas
+
+def submenu_presencas(pacientes, presencas):
+    while True:
+        print("\n--- Menu de Presenças ---")
+        print("1. Confirmar Presença")
+        print("2. Cancelar Consulta")
+        print("3. Voltar")
+        escolha = input("Escolha uma opção: ").strip()
+
+        if escolha == '1':
+            presencas = confirmar_presenca(pacientes, presencas)
+        elif escolha == '2':
+            pacientes, presencas = cancelar_consulta(pacientes, presencas)
+        elif escolha == '3':
+            break
+        else:
+            print("Opção inválida.")
+    return pacientes, presencas
+
+# ------------------------------
 # Menu principal
-def menu():
+# ------------------------------
+
+def menu_principal():
+    pacientes = []
+    presencas = []
     sair = False
     while not sair:
         print("\n=== Assistente Virtual HC ===")
-        print("1. Cadastrar Paciente")
-        print("2. Visualizar Pacientes")
-        print("3. Confirmar Presença")
-        print("4. Cancelar Consulta")
-        print("5. Orientações Pré-Consulta")
-        print("6. Sair")
-        escolha = input("Escolha uma opção: ")
+        print("1. Gerenciar Pacientes")
+        print("2. Presenças e Cancelamentos")
+        print("3. Orientações Pré-Consulta")
+        print("4. Sair")
+        escolha = input("Escolha uma opção: ").strip()
 
-        if escolha == '1':
-            cadastrar_paciente()
-        elif escolha == '2':
-            listar_pacientes()
-        elif escolha == '3':
-            confirmar_presenca()
-        elif escolha == '4':
-            cancelar_consulta()
-        elif escolha == '5':
-            mostrar_orientacoes()
-        elif escolha == '6':
-            print("Encerrando o seu atendimento. Obrigado!")
-            sair = True
-        else:
-            print("Opção inválida. Tente novamente.")
+        try:
+            if escolha == '1':
+                pacientes, presencas = submenu_crud_pacientes(pacientes, presencas)
+            elif escolha == '2':
+                pacientes, presencas = submenu_presencas(pacientes, presencas)
+            elif escolha == '3':
+                mostrar_orientacoes()
+            elif escolha == '4':
+                print("Encerrando o atendimento. Obrigado!")
+                sair = True
+            else:
+                print("Opção inválida.")
+        except Exception as e:
+            print(f"Ocorreu um erro: {e}")
 
-# Inicia o programa
-menu()
+# ------------------------------
+# Início do programa
+# ------------------------------
+
+if __name__ == "__main__":
+    menu_principal()
