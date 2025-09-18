@@ -48,4 +48,4 @@ O sistema utiliza **listas de listas** e **listas simples** para armazenar os da
 1. Baixe o código ou clone o repositório:
 
 ```bash
-git clone <seu-repositorio>
+git clone <https://github.com/ssamaraps/MenuPython_Sprint.git>
