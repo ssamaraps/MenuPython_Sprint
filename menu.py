@@ -3,10 +3,7 @@
 # Estrutura: CRUD em listas de dicionários
 # ==============================
 
-# ------------------------------
 # Funções de validação
-# ------------------------------
-
 def validar_cpf(cpf):
     """Valida se o CPF possui 11 dígitos numéricos"""
     return len(cpf) == 11 and cpf.isdigit()
@@ -20,10 +17,7 @@ def validar_tipo(tipo):
     tipos_validos = ["motora", "cognitiva", "física", "ocupacional"]
     return tipo.lower() in tipos_validos
 
-# ------------------------------
 # Funções CRUD de Pacientes
-# ------------------------------
-
 def cadastrar_paciente(pacientes):
     """Cadastra um novo paciente"""
     print("\n--- Cadastrar Paciente ---")
@@ -134,9 +128,7 @@ def excluir_paciente(pacientes, presencas):
     print("Paciente não encontrado.")
     return pacientes, presencas
 
-# ------------------------------
 # Funções de presença e cancelamento
-# ------------------------------
 
 def confirmar_presenca(pacientes, presencas):
     """Confirma presença de um paciente"""
@@ -182,10 +174,7 @@ def cancelar_consulta(pacientes, presencas):
     print("Paciente não encontrado.")
     return pacientes, presencas
 
-# ------------------------------
 # Orientações pré-consulta
-# ------------------------------
-
 def mostrar_orientacoes():
     print("\n--- Orientações Pré-Consulta ---")
     print("1. Garanta boa conexão com a internet.")
@@ -194,10 +183,7 @@ def mostrar_orientacoes():
     print("4. Tenha documentos em mãos.")
     print("5. Clique no link da consulta 10 minutos antes.")
 
-# ------------------------------
 # Submenus
-# ------------------------------
-
 def submenu_crud_pacientes(pacientes, presencas):
     while True:
         print("\n--- Menu de Pacientes ---")
@@ -240,10 +226,7 @@ def submenu_presencas(pacientes, presencas):
             print("Opção inválida.")
     return pacientes, presencas
 
-# ------------------------------
 # Menu principal
-# ------------------------------
-
 def menu_principal():
     pacientes = []
     presencas = []
@@ -269,12 +252,9 @@ def menu_principal():
                 print("Opção inválida.")
         except Exception as e:
             print(f"Ocorreu um erro: {e}")
-        finally:
-            pass  # espaço reservado para log ou limpeza
+        
 
-# ------------------------------
 # Início do programa
-# ------------------------------
 
 if __name__ == "__main__":
     menu_principal()
